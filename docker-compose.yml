@@ -31,7 +31,9 @@ services:
       - ".env" 
     volumes:
       - ./etc/php/php.ini:/usr/local/etc/php/conf.d/php.ini
-      - ./www:/var/www
+      - ./www/app:/var/www/app
+    depends_on:
+      - postgres
     networks:
       - backend          
   postgres:
