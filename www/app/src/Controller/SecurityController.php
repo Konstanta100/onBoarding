@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Dto\LoginRequest;
 use App\Dto\RegisterByEmailRequest;
+use App\Service\EmailRegister;
 use App\Service\RegisterService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +31,9 @@ class SecurityController extends AbstractController
      */
     public function registerByEmailAction(RegisterByEmailRequest $registerRequest): JsonResponse
     {
-        $user = $this->registerService->addUser($registerRequest);
+        $this->registerService->setStrategy(new EmailRegister());
+
+        $this->registerService->initiate($registerRequest);
 
         if($user){
             return new JsonResponse($user->getEmail());

@@ -22,12 +22,16 @@ class UserService
         $this->userRepository = $userRepository;
     }
 
-    public function isUser(RegisterByEmailRequest $registerRequest): ?User
+    /**
+     * @param string $email
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User
     {
-        return $this->userRepository->findByEmail($registerRequest->getEmail());
+        return $this->userRepository->findByEmail($email);
     }
 
-    public function createUser()
+    public function createUser(RegisterByEmailRequest $registerRequest)
     {
         $this->userRepository->addUser();
     }

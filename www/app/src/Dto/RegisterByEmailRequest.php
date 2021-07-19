@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @Serializer\ExclusionPolicy("all")
  */
-class RegisterByEmailRequest
+class RegisterByEmailRequest implements RegisterRequest
 {
     /**
      * @Assert\NotBlank(
@@ -24,10 +24,26 @@ class RegisterByEmailRequest
     private string $email = '';
 
     /**
+     * @Serializer\Expose()
+     * @Serializer\Type("string")
+     *
+     * @var string
+     */
+    private string $password = '';
+
+    /**
      * @return string
      */
-    public function getEmail(): string
+    public function getContact(): string
     {
         return $this->email;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
     }
 }

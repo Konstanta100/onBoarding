@@ -5,35 +5,34 @@ namespace App\Service;
 
 
 use App\Dto\RegisterByEmailRequest;
+use App\Dto\RegisterRequest;
 use App\Entity\User;
 
 class RegisterService
 {
+    private RegisterStrategy $registerStrategy;
+
     private UserService $userService;
 
     public function __construct(
-        UserService $userService
+        UserService $userService,
+        RegisterStrategy $registerStrategy
     )
     {
         $this->userService = $userService;
+        $this->registerStrategy = $registerStrategy;
     }
-
-    public function sendEmail(RegisterByEmailRequest $registerRequest)
-    {
-    }
-
 
     /**
-     * @param RegisterByEmailRequest $registerRequest
+     * @param RegisterStrategy $registerStrategy
      */
-    public function addUser(RegisterByEmailRequest $registerRequest): User
+    public function setStrategy(RegisterStrategy $registerStrategy)
     {
-        return new User();
-//        if($this->userService->isUser($registerRequest)){
-//            return;
-//        }
-//
-//        return $this->userService->createUser();
+        $this->registerStrategy = $registerStrategy;
+    }
 
+    public function initiate(RegisterRequest $registerRequest)
+    {
+        $user = $this->registerStrategy->initiate($registerRequest);
     }
 }
