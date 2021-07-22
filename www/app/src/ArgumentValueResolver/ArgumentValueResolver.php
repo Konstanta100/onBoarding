@@ -4,12 +4,15 @@ declare(strict_types=1);
 namespace App\ArgumentValueResolver;
 
 
+use App\Dto\ValidationError;
+use App\Exception\ValidationException;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Exception\ValidationErrorException;
+use App\Exception\Api\ApiValidationException;
 
 /**
  * Class ArgumentValueResolver
@@ -46,14 +49,27 @@ class ArgumentValueResolver implements ArgumentValueResolverInterface
      * @param Request $request
      * @param ArgumentMetadata $argument
      * @return \Generator|iterable
+     * @throws ApiValidationException
      */
     public function resolve(Request $request, ArgumentMetadata $argument)
     {
         $argumentObj = $this->serializer->deserialize($request->getContent(), $argument->getType(), 'json');
         $violationsList = $this->validator->validate($argumentObj);
 
-        if (\count($violationsList) > 0) {
-            throw new ValidationErrorException('Invalid credentials.', 400);
+        if (($countViolations = \count($violationsList)) > 0) {
+            $errors = [];
+
+            for ($i = 0; $i < $countViolations; $i++) {
+                if($violationsList->has($i)){
+                    $violation = $violationsList->get($i);
+                    $error = new ValidationError();
+                    $errors[] = $error->setMessage($violation->getMessage())
+                        ->setProperty($violation->getPropertyPath())
+                        ->setInvalidValue($violation->getInvalidValue());
+                }
+            }
+
+            throw new ApiValidationException($errors);
         }
 
         yield $argumentObj;

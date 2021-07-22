@@ -13,8 +13,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class RegisterByEmailRequest implements RegisterRequest
 {
     /**
+     * @Assert\Email(
+     *     message = "The email {{ value }} is not a valid."
+     * )
      * @Assert\NotBlank(
-     *     message = "The email {{value}} is not specified."
+     *     message = "The email is not specified."
      * )
      * @Serializer\Expose()
      * @Serializer\Type("string")
@@ -24,6 +27,9 @@ class RegisterByEmailRequest implements RegisterRequest
     private string $email = '';
 
     /**
+     * @Assert\NotBlank(
+     *     message = "The password is not specified."
+     * )
      * @Serializer\Expose()
      * @Serializer\Type("string")
      *

@@ -5,21 +5,24 @@ namespace App\Service;
 
 
 use App\Dto\RegisterByEmailRequest;
+use App\Dto\RegisterRequest;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserService
 {
-    /**
-     * @var UserRepository
-     */
     private UserRepository $userRepository;
 
+    protected UserPasswordEncoderInterface $passwordEncoder;
+
     public function __construct(
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        UserPasswordEncoderInterface $passwordEncoder
     )
     {
         $this->userRepository = $userRepository;
+        $this->passwordEncoder = $passwordEncoder;
     }
 
     /**
@@ -31,9 +34,12 @@ class UserService
         return $this->userRepository->findByEmail($email);
     }
 
-    public function createUser(RegisterByEmailRequest $registerRequest)
+    public function registerByEmail(RegisterRequest $registerRequest): void
     {
-        $this->userRepository->addUser();
+        $user = new User();
+        $password = $this->passwordEncoder->encodePassword($user, $registerRequest->getPassword());
+        $user->setPassword($password);
+        $user->setEmail($registerRequest->getContact());
+        $this->userRepository->addUser($user);
     }
-
 }

@@ -14,14 +14,17 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SecurityController extends AbstractController
 {
-    /**
-     * @var RegisterService
-     */
     private RegisterService $registerService;
 
-    public function __construct(RegisterService $registerService)
+    private EmailRegister $emailRegister;
+
+    public function __construct(
+        RegisterService $registerService,
+        EmailRegister $emailRegister
+    )
     {
         $this->registerService = $registerService;
+        $this->emailRegister = $emailRegister;
     }
 
     /**
@@ -31,15 +34,11 @@ class SecurityController extends AbstractController
      */
     public function registerByEmailAction(RegisterByEmailRequest $registerRequest): JsonResponse
     {
-        $this->registerService->setStrategy(new EmailRegister());
+        $this->registerService->setStrategy($this->emailRegister);
 
         $this->registerService->initiate($registerRequest);
 
-        if($user){
-            return new JsonResponse($user->getEmail());
-        }
-
-        return new JsonResponse();
+        return new JsonResponse(['message' => "The letter was sent to the email: {$registerRequest->getContact()}"]);
     }
 
     /**
@@ -63,7 +62,6 @@ class SecurityController extends AbstractController
      */
     public function verifyEmailAction(): JsonResponse
     {
-        //        $result = $this->registerService->sendEmail($registerRequest);
-        return $this->json(null);
+        return $this->json('test');
     }
 }
