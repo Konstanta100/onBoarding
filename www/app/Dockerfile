@@ -18,6 +18,7 @@ RUN apt-get update && apt-get upgrade -y \
     libzip-dev \
     unzip \
     && pecl install xdebug-2.9.0 && docker-php-ext-enable xdebug \
+    && pecl install redis && docker-php-ext-enable redis \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install pdo pdo_pgsql pgsql \
     && docker-php-ext-configure zip \

@@ -34,12 +34,14 @@ class UserService
         return $this->userRepository->findByEmail($email);
     }
 
-    public function registerByEmail(RegisterRequest $registerRequest): void
+    public function registerByEmail(RegisterRequest $registerRequest): User
     {
         $user = new User();
         $password = $this->passwordEncoder->encodePassword($user, $registerRequest->getPassword());
         $user->setPassword($password);
         $user->setEmail($registerRequest->getContact());
-        $this->userRepository->addUser($user);
+        $this->userRepository->save($user);
+
+        return $user;
     }
 }

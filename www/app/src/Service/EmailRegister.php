@@ -6,8 +6,9 @@ namespace App\Service;
 
 use App\Dto\RegisterRequest;
 use App\Entity\User;
+use App\Event\UserEvents;
+use App\Event\EmailRegisterEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class EmailRegister extends ContactRegister implements RegisterStrategy
 {
@@ -19,7 +20,10 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             throw new BadRequestHttpException('User with this email already exists', null, 400);
         }
 
-        $this->userService->registerByEmail($registerRequest);
+        $user = $this->userService->registerByEmail($registerRequest);
+
+        $event = new EmailRegisterEvent($user);
+        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_REGISTER);
     }
 
     public function confirmContact()

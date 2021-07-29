@@ -51,9 +51,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @param User $user
      */
-    public function addUser(User $user): void
+    public function save(User $user): void
     {
         $this->_em->persist($user);
+        $this->_em->flush();
+    }
+
+    /**
+     * @param User $user
+     */
+    public function remove(User $user): void
+    {
+        $this->_em->remove($user);
         $this->_em->flush();
     }
 }

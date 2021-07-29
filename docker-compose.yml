@@ -15,6 +15,7 @@ services:
     depends_on:
       - php
       - postgres
+      - redis
     environment:
       TZ: ${TZ}  
     networks:
@@ -53,7 +54,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TZ}
     networks:
-        - backend
+      - backend
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ./etc/redis/data:/var/lib/redis/data
+      - ./etc/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    restart: always
+    environment:
+      TZ: ${TZ}
+    networks:
+      - backend
 networks:  
   backend:  
     name: php_backend

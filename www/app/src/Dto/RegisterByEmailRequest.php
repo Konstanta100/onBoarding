@@ -14,10 +14,10 @@ class RegisterByEmailRequest implements RegisterRequest
 {
     /**
      * @Assert\Email(
-     *     message = "The email {{ value }} is not a valid."
+     *     message = "The email {{ value }} is not a valid"
      * )
      * @Assert\NotBlank(
-     *     message = "The email is not specified."
+     *     message = "The email is not specified"
      * )
      * @Serializer\Expose()
      * @Serializer\Type("string")
@@ -28,7 +28,7 @@ class RegisterByEmailRequest implements RegisterRequest
 
     /**
      * @Assert\NotBlank(
-     *     message = "The password is not specified."
+     *     message = "The password is not specified"
      * )
      * @Serializer\Expose()
      * @Serializer\Type("string")
