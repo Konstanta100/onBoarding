@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Dto\RegisterRequest;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+use App\Dto\Request\ConfirmEmailRequest;
+use App\Dto\Request\ConfirmUserRequest;
+use App\Dto\Request\RegisterRequest;
+use App\Dto\Response\RegisterResponse;
 
 class RegisterService
 {
@@ -26,8 +28,18 @@ class RegisterService
         $this->registerStrategy = $registerStrategy;
     }
 
-    public function initiate(RegisterRequest $registerRequest): void
+    public function initiate(RegisterRequest $registerRequest): RegisterResponse
     {
-        $this->registerStrategy->initiate($registerRequest);
+        return $this->registerStrategy->initiate($registerRequest);
+    }
+
+    public function confirm(ConfirmUserRequest $confirmRequest): RegisterResponse
+    {
+        return $this->registerStrategy->confirmUser($confirmRequest);
+    }
+
+    public function confirmContact(ConfirmEmailRequest $confirmEmailRequest): RegisterResponse
+    {
+        return $this->registerStrategy->confirmContact($confirmEmailRequest);
     }
 }

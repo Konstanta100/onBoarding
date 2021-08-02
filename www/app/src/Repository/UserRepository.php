@@ -1,12 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
-use App\Dto\RegisterRequest;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
@@ -63,6 +62,26 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function remove(User $user): void
     {
         $this->_em->remove($user);
+        $this->_em->flush();
+    }
+
+    /**
+     * @param mixed $userId
+     * @return User|null
+     */
+    public function findById($userId): ?User
+    {
+        return $this->find($userId);
+    }
+
+    /**
+     * @param User $user
+     * @param bool $status
+     */
+    public function updateStatus(User $user, bool $status): void
+    {
+        $user->setActive($status);
+        $this->_em->persist($user);
         $this->_em->flush();
     }
 }

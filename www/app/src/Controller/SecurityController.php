@@ -4,8 +4,11 @@
 namespace App\Controller;
 
 
-use App\Dto\LoginRequest;
-use App\Dto\RegisterByEmailRequest;
+use App\Dto\Request\ConfirmEmailRequest;
+use App\Dto\Request\ConfirmUserRequest;
+use App\Dto\Request\LoginRequest;
+use App\Dto\Response\MessageResponse;
+use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
 use App\Service\RegisterService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,17 +31,47 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * @Route("/api/registerByEmail", name="registerByEmail", methods={"POST"})
+     * @Route("/api/registerEmail", name="registerEmail", methods={"POST"})
      * @param RegisterByEmailRequest $registerRequest
      * @return JsonResponse
      */
-    public function registerByEmailAction(RegisterByEmailRequest $registerRequest): JsonResponse
+    public function registerEmailAction(RegisterByEmailRequest $registerRequest): JsonResponse
     {
         $this->registerService->setStrategy($this->emailRegister);
 
-        $this->registerService->initiate($registerRequest);
+        $registerResponse = $this->registerService->initiate($registerRequest);
 
-        return new JsonResponse(['message' => "The letter was sent to the email: {$registerRequest->getContact()}"]);
+        return $this->json(new MessageResponse($registerResponse->getMessage()), $registerResponse->getCode());
+    }
+
+
+    /**
+     * @Route("/api/confirmEmail/{token}/user/{userId}", name="confirmEmail", methods={"GET"})
+     * @param string $token
+     * @param int $userId
+     * @return JsonResponse
+     */
+    public function confirmEmailAction(string $token, int $userId): JsonResponse
+    {
+        $this->registerService->setStrategy($this->emailRegister);
+
+        $confirmResponse = $this->registerService->confirm(new ConfirmUserRequest($userId, $token));
+
+        return $this->json(new MessageResponse($confirmResponse->getMessage()), $confirmResponse->getCode());
+    }
+
+    /**
+     * @Route("/api/sendEmailConfirm", name="sendEmailConfirm", methods={"POST"})
+     * @param ConfirmEmailRequest $confirmEmailRequest
+     * @return JsonResponse
+     */
+    public function sendEmailConfirmAction(ConfirmEmailRequest $confirmEmailRequest): JsonResponse
+    {
+        $this->registerService->setStrategy($this->emailRegister);
+
+        $confirmEmailResponse = $this->registerService->confirmContact($confirmEmailRequest);
+
+        return $this->json(new MessageResponse($confirmEmailResponse->getMessage()), $confirmEmailResponse->getCode());
     }
 
     /**
@@ -54,14 +87,5 @@ class SecurityController extends AbstractController
             'login' => $user->getUserIdentifier(),
             'roles' => $user->getRoles(),
         ]);
-    }
-
-    /**
-     * @Route("/api/verifyEmail", name="verifyEmail", methods={"POST"})
-     * @return JsonResponse
-     */
-    public function verifyEmailAction(): JsonResponse
-    {
-        return $this->json('test');
     }
 }

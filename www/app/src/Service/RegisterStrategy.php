@@ -4,14 +4,19 @@
 namespace App\Service;
 
 
-use App\Dto\RegisterRequest;
+use App\Dto\Request\ConfirmContactRequest;
+use App\Dto\Request\ConfirmUserRequest;
+use App\Dto\Request\RegisterRequest;
+use App\Dto\Response\RegisterResponse;
 
 interface RegisterStrategy
 {
     /**
      * @param RegisterRequest $registerRequest
      */
-    public function initiate(RegisterRequest $registerRequest);
+    public function initiate(RegisterRequest $registerRequest): RegisterResponse;
 
-    public function confirmContact();
+    public function confirmUser(ConfirmUserRequest $confirmRequest): RegisterResponse;
+
+    public function confirmContact(ConfirmContactRequest $confirmContactRequest): RegisterResponse;
 }

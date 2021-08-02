@@ -1,29 +1,23 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-
 use App\Event\UserEvents;
 use App\Event\EmailRegisterEvent;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Redis;
-
 
 class EmailRegisterSubscriber implements EventSubscriberInterface
 {
     protected MailerInterface $mailer;
 
-    protected Redis $redis;
-
-    public function __construct(MailerInterface $mailer, Redis $redis)
+    public function __construct(MailerInterface $mailer)
     {
         $this->mailer = $mailer;
-        $this->redis = $redis;
     }
 
     public static function getSubscribedEvents(): array
@@ -36,25 +30,27 @@ class EmailRegisterSubscriber implements EventSubscriberInterface
     /**
      * @throws TransportExceptionInterface
      */
-    public function onEmailRegister(EmailRegisterEvent $event)
+    public function onEmailRegister(EmailRegisterEvent $event): void
     {
         $user = $event->getUser();
-        $this->redis->set($user->getId(), $user->getEmail(), 100);
-        var_dump($this->redis->get($user->getId()));
-        sleep(5);
-        var_dump($this->redis->ttl($user->getId()));
-        die();
+        $token = $event->getToken();
+
+        $subject = "Подтверждение почты на сайте " . $_SERVER['HTTP_HOST'];
+        $subject = "=?utf-8?B?" . base64_encode($subject) . "?=";
+
+        $textLink = 'http://' . $_SERVER['HTTP_HOST'] . '/api/confirmEmail/' . $token . '/user/' . $user->getId();
+        $link = "<a href={$textLink}>{$textLink}</a>";
+
+        $message = 'Здравствуйте! Чтобы войти, перейдите по ссылке ниже. ВНИМАНИЕ!
+        Ссылка действительная 24 часа. Если вы не запрашивали ссылку для входа,
+        просто проигнорируйте это письмо.';
 
         $email = (new Email())->from('hello@example.com')
             ->to($event->getUser()->getEmail())
-            ->subject('Time for Symfony Mailer!')
-            ->text('Sending emails is fun again!')
-            ->html('<p>See Twig integration for better HTML integration!</p>');
+            ->subject($subject)
+            ->text($textLink)
+            ->html("<p>{$message}</p><p>{$link}</p>");
 
         $this->mailer->send($email);
-
-
-        var_dump($user);
-        die();
     }
 }
