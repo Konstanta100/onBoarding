@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Dto\Request\ConfirmEmailRequest;
 use App\Dto\Request\ConfirmUserRequest;
 use App\Dto\Request\LoginRequest;
-use App\Dto\Response\MessageResponse;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
 use App\Service\RegisterService;
@@ -41,9 +40,8 @@ class SecurityController extends AbstractController
 
         $registerResponse = $this->registerService->initiate($registerRequest);
 
-        return $this->json(new MessageResponse($registerResponse->getMessage()), $registerResponse->getCode());
+        return $this->json($registerResponse, $registerResponse->getCode());
     }
-
 
     /**
      * @Route("/api/confirmEmail/{token}/user/{userId}", name="confirmEmail", methods={"GET"})
@@ -57,7 +55,7 @@ class SecurityController extends AbstractController
 
         $confirmResponse = $this->registerService->confirm(new ConfirmUserRequest($userId, $token));
 
-        return $this->json(new MessageResponse($confirmResponse->getMessage()), $confirmResponse->getCode());
+        return $this->json($confirmResponse, $confirmResponse->getCode());
     }
 
     /**
@@ -71,7 +69,7 @@ class SecurityController extends AbstractController
 
         $confirmEmailResponse = $this->registerService->confirmContact($confirmEmailRequest);
 
-        return $this->json(new MessageResponse($confirmEmailResponse->getMessage()), $confirmEmailResponse->getCode());
+        return $this->json($confirmEmailResponse, $confirmEmailResponse->getCode());
     }
 
     /**

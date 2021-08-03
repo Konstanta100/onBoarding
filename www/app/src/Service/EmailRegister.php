@@ -51,7 +51,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
                 $user = $this->userService->findById($userId);
 
                 if (!$user instanceof User) {
-                    return new RegisterResponse('User not found', Response::HTTP_GONE);
+                    return new RegisterResponse('User not found', Response::HTTP_NOT_FOUND);
                 }
 
                 $this->userService->activate($user);
@@ -88,12 +88,21 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             return new RegisterResponse('User not found', Response::HTTP_NOT_FOUND);
         }
 
+        if ($user->isActive()) {
+            return new RegisterResponse('User with this email already exists',Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($this->redis->exists($this->createKey($user->getId()))) {
+            return new RegisterResponse('The confirmation email has already been sent',Response::HTTP_BAD_REQUEST);
+        };
+
         return $this->sendConfirm($user);
     }
 
     private function sendConfirm(User $user): RegisterResponse
     {
-        $event = new EmailRegisterEvent($user, $this->createToken($user));
+        $token = $this->createToken($user);
+        $event = new EmailRegisterEvent($user, $token);
         $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_REGISTER);
 
         return new RegisterResponse('The letter was sent to the email: ' . $user->getEmail());

@@ -14,7 +14,7 @@ class RegisterByEmailRequest implements RegisterRequest
 {
     /**
      * @Assert\Email(
-     *     message = "The email {{ value }} is not a valid"
+     *     message = "The email is not a valid"
      * )
      * @Assert\NotBlank(
      *     message = "The email is not specified"
