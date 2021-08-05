@@ -14,6 +14,7 @@
         "doctrine/orm": "^2.8",
         "jms/serializer": "^3.12",
         "jms/serializer-bundle": "^3.9",
+        "nyholm/psr7": "^1.4",
         "phpdocumentor/reflection-docblock": "^5.2",
         "predis/predis": "^1.1",
         "sensio/framework-extra-bundle": "^6.1",
@@ -47,6 +48,7 @@
         "symfony/validator": "5.2.*",
         "symfony/web-link": "5.2.*",
         "symfony/yaml": "5.2.*",
+        "trikoder/oauth2-bundle": "^3.2",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0"
     },

@@ -30,7 +30,7 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * @Route("/api/registerEmail", name="registerEmail", methods={"POST"})
+     * @Route("/registerEmail", name="registerEmail", methods={"POST"})
      * @param RegisterByEmailRequest $registerRequest
      * @return JsonResponse
      */
@@ -44,7 +44,7 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * @Route("/api/confirmEmail/{token}/user/{userId}", name="confirmEmail", methods={"GET"})
+     * @Route("/confirmEmail/{token}/user/{userId}", name="confirmEmail", methods={"GET"})
      * @param string $token
      * @param int $userId
      * @return JsonResponse
@@ -59,7 +59,7 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * @Route("/api/sendEmailConfirm", name="sendEmailConfirm", methods={"POST"})
+     * @Route("/sendEmailConfirm", name="sendEmailConfirm", methods={"POST"})
      * @param ConfirmEmailRequest $confirmEmailRequest
      * @return JsonResponse
      */
@@ -70,20 +70,5 @@ class SecurityController extends AbstractController
         $confirmEmailResponse = $this->registerService->confirmContact($confirmEmailRequest);
 
         return $this->json($confirmEmailResponse, $confirmEmailResponse->getCode());
-    }
-
-    /**
-     * @Route("/api/login", name="login", methods={"POST"})
-     * @param LoginRequest $loginRequest
-     * @return JsonResponse
-     */
-    public function loginAction(LoginRequest $loginRequest): JsonResponse
-    {
-        $user = $this->getUser();
-
-        return $this->json([
-            'login' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles(),
-        ]);
     }
 }

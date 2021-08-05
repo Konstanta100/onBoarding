@@ -1,0 +1,21 @@
+trikoder_oauth2:
+
+    authorization_server:
+        private_key: /var/www/app/oauth/private.key                     # Change this
+        private_key_passphrase: null                            # Passphrase of the private key, if any
+
+        encryption_key: '%env(string:OAUTH2_ENCRYPTION_KEY)%'   # (Optional) Change this
+
+        access_token_ttl: PT1H
+
+        refresh_token_ttl: P7D
+
+        enable_password_grant: true
+
+    resource_server:
+        public_key: /var/www/app/oauth/public.key                       # Change this
+
+    scopes: []
+
+    persistence:
+        doctrine: null

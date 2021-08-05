@@ -36,3 +36,10 @@ services:
         arguments:
             - '%env(REDIS_URL)%'
             - { retry_interval: 2, timeout: 10 }
+
+    App\EventListener\UserResolveListener:
+        arguments:
+            - '@App\Service\UserService'
+            - '@security.password_encoder'
+        tags:
+            - { name: kernel.event_listener, event: trikoder.oauth2.user_resolve, method: onUserResolve }

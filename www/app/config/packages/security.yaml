@@ -1,5 +1,4 @@
 security:
-    enable_authenticator_manager: true
 
     encoders:
         App\Entity\User:
@@ -17,27 +16,20 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
-            provider: app_user_provider
-#        api:
-#            pattern: ^/api
-#            custom_authenticators:
-#                - App\Security\ApiKeyAuthenticator
-
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#firewalls-authentication
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+        api_token:
+            pattern: ^/token$
+            security: false
+        api:
+            pattern: ^/api
+            security: true
+            stateless: true
+            oauth2: true
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/registerByEmail, roles: PUBLIC_ACCESS }
-        - { path: ^/api/verifyEmail, roles: PUBLIC_ACCESS }
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/user, roles: ROLE_USER }
+        - { path: ^/registerByEmail, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/verifyEmail, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/sendEmailConfirm, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+
