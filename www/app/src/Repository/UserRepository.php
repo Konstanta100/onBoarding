@@ -83,15 +83,4 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->find($userId);
     }
-
-    /**
-     * @param User $user
-     * @param bool $status
-     */
-    public function updateStatus(User $user, bool $status): void
-    {
-        $user->setActive($status);
-        $this->_em->persist($user);
-        $this->_em->flush();
-    }
 }

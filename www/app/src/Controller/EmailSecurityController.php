@@ -4,9 +4,9 @@
 namespace App\Controller;
 
 
+use App\Dto\Request\AcceptPasswordRequest;
 use App\Dto\Request\ConfirmEmailRequest;
 use App\Dto\Request\ConfirmUserRequest;
-use App\Dto\Request\LoginRequest;
 use App\Dto\Request\RecoverPasswordRequest;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
-class SecurityController extends AbstractController
+class EmailSecurityController extends AbstractController
 {
     private RegisterService $registerService;
 
@@ -85,5 +85,19 @@ class SecurityController extends AbstractController
         $recoverPasswordResponse = $this->registerService->recoverPassword($recoverPasswordRequest);
 
         return $this->json($recoverPasswordResponse, $recoverPasswordResponse->getCode());
+    }
+
+    /**
+     * @Route("/acceptPassword", name="acceptPassword", methods={"POST"})
+     * @param AcceptPasswordRequest $acceptPasswordRequest
+     * @return JsonResponse
+     */
+    public function acceptPasswordEmail(AcceptPasswordRequest $acceptPasswordRequest): JsonResponse
+    {
+        $this->registerService->setStrategy($this->emailRegister);
+
+        $acceptPasswordResponse = $this->registerService->acceptPassword($acceptPasswordRequest);
+
+        return $this->json($acceptPasswordResponse, $acceptPasswordResponse->getCode());
     }
 }

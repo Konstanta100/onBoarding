@@ -67,6 +67,12 @@ class UserService
 
     public function activate(User $user): void
     {
-        $this->userRepository->updateStatus($user, true);
+        $user->setActive(true);
+        $this->userRepository->save($user);
+    }
+
+    public function updatePassword(User $user, string $password)
+    {
+        $user->setPassword($password);
     }
 }

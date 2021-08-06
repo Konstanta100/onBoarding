@@ -9,20 +9,20 @@ class ConfirmUserRequest
 {
     private int $userId;
 
-    private string $code;
+    private string $token;
 
-    public function __construct(int $userId, string $code)
+    public function __construct(int $userId, string $token)
     {
         $this->userId = $userId;
-        $this->code = $code;
+        $this->token = $token;
     }
 
     /**
      * @return string
      */
-    public function getCode(): string
+    public function getToken(): string
     {
-        return $this->code;
+        return $this->token;
     }
 
     /**

@@ -11,7 +11,7 @@ class ConfirmEmailRequest implements ConfirmContactRequest
 {
     /**
      * @Assert\Email(
-     *     message = "The email {{ value }} is not a valid"
+     *     message = "The email is not a valid"
      * )
      * @Assert\NotBlank(
      *     message = "The email is not specified"
@@ -21,7 +21,7 @@ class ConfirmEmailRequest implements ConfirmContactRequest
      *
      * @var string
      */
-    private string $email = '';
+    private string $email;
 
     /**
      * @return string

@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 
 namespace App\Dto\Request;
 
@@ -10,21 +9,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @Serializer\ExclusionPolicy("all")
  */
-class RegisterByEmailRequest implements RegisterRequest
+class EmailAcceptPasswordRequest implements AcceptPasswordRequest
 {
     /**
-     * @Assert\Email(
-     *     message = "The email is not a valid"
-     * )
      * @Assert\NotBlank(
-     *     message = "The email is not specified"
+     *     message = "The userId is not specified"
+     * )
+     * @Serializer\Expose()
+     * @Serializer\Type("int")
+     *
+     * @var int
+     */
+    private int $userId;
+
+
+    /**
+     * @Assert\NotBlank(
+     *     message = "The password is not specified"
      * )
      * @Serializer\Expose()
      * @Serializer\Type("string")
      *
      * @var string
      */
-    private string $email;
+    private string $token;
 
     /**
      * @Assert\NotBlank(
@@ -40,9 +48,9 @@ class RegisterByEmailRequest implements RegisterRequest
     /**
      * @return string
      */
-    public function getContact(): string
+    public function getToken(): string
     {
-        return $this->email;
+        return $this->token;
     }
 
     /**
@@ -51,5 +59,13 @@ class RegisterByEmailRequest implements RegisterRequest
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUserId(): int
+    {
+        return $this->userId;
     }
 }

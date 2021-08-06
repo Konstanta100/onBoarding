@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Dto\Request\ConfirmEmailRequest;
+use App\Dto\Request\AcceptPasswordRequest;
+use App\Dto\Request\ConfirmContactRequest;
 use App\Dto\Request\ConfirmUserRequest;
 use App\Dto\Request\RecoverPasswordRequest;
 use App\Dto\Request\RegisterRequest;
@@ -30,23 +31,28 @@ class RegisterService
         $this->registerStrategy = $registerStrategy;
     }
 
-    public function initiate(RegisterRequest $registerRequest): RegisterResponse
+    public function initiate(RegisterRequest $registerRequest): DataResponse
     {
         return $this->registerStrategy->initiate($registerRequest);
     }
 
-    public function confirm(ConfirmUserRequest $confirmRequest): RegisterResponse
+    public function confirm(ConfirmUserRequest $confirmRequest): DataResponse
     {
         return $this->registerStrategy->confirmUser($confirmRequest);
     }
 
-    public function confirmContact(ConfirmEmailRequest $confirmEmailRequest): RegisterResponse
+    public function confirmContact(ConfirmContactRequest $confirmEmailRequest): DataResponse
     {
         return $this->registerStrategy->confirmContact($confirmEmailRequest);
     }
 
-    public function recoverPassword(RecoverPasswordRequest $confirmEmailRequest): RecoverResponse
+    public function recoverPassword(RecoverPasswordRequest $confirmEmailRequest): DataResponse
     {
         return $this->registerStrategy->recoverPassword($confirmEmailRequest);
+    }
+
+    public function acceptPassword(AcceptPasswordRequest $acceptPasswordRequest): DataResponse
+    {
+        return $this->registerStrategy->acceptPassword($acceptPasswordRequest);
     }
 }
