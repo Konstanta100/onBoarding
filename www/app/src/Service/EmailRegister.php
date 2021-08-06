@@ -7,9 +7,12 @@ namespace App\Service;
 
 use App\Dto\Request\ConfirmContactRequest;
 use App\Dto\Request\ConfirmUserRequest;
+use App\Dto\Request\RecoverPasswordRequest;
+use App\Dto\Response\RecoverResponse;
 use App\Dto\Response\RegisterResponse;
 use App\Dto\Request\RegisterRequest;
 use App\Entity\User;
+use App\Event\EmailRecoverPasswordEvent;
 use App\Event\UserEvents;
 use App\Event\EmailRegisterEvent;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +30,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
                 $message = 'User already exists. Email confirmation is required';
             }
 
-            if ($this->redis->exists($this->createKey($user->getId()))) {
+            if ($this->redis->exists($this->createRegisterKey($user->getId()))) {
                 $message = 'The confirmation email has already been sent';
             };
 
@@ -36,14 +39,16 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
 
         $user = $this->userService->registerByEmail($registerRequest);
 
-        return $this->sendConfirm($user);
+        $this->sendConfirm($user);
+
+        return new RegisterResponse('The letter was sent to the email: ' . $user->getEmail());
     }
 
     public function confirmUser(ConfirmUserRequest $confirmRequest): RegisterResponse
     {
         $userId = $confirmRequest->getUserId();
 
-        $redisKey = $this->createKey($userId);
+        $redisKey = $this->createRegisterKey($userId);
 
         if ($token = $this->redis->get($redisKey)) {
             if ($token === $confirmRequest->getCode()) {
@@ -71,9 +76,9 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
      * @param User $user
      * @return string
      */
-    private function createToken(User $user): string
+    private function createRegisterToken(User $user): string
     {
-        $redisKey = $this->createKey($user->getId());
+        $redisKey = $this->createRegisterKey($user->getId());
         $token = md5($user->getEmail() . time());
         $this->redis->set($redisKey, $token, 86400);
 
@@ -89,31 +94,73 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
         }
 
         if ($user->isActive()) {
-            return new RegisterResponse('User with this email already exists',Response::HTTP_BAD_REQUEST);
+            return new RegisterResponse('User with this email already exists', Response::HTTP_BAD_REQUEST);
         }
 
-        if ($this->redis->exists($this->createKey($user->getId()))) {
-            return new RegisterResponse('The confirmation email has already been sent',Response::HTTP_BAD_REQUEST);
+        if ($this->redis->exists($this->createRegisterKey($user->getId()))) {
+            return new RegisterResponse('The confirmation email has already been sent', Response::HTTP_BAD_REQUEST);
         };
 
-        return $this->sendConfirm($user);
-    }
-
-    private function sendConfirm(User $user): RegisterResponse
-    {
-        $token = $this->createToken($user);
-        $event = new EmailRegisterEvent($user, $token);
-        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_REGISTER);
+        $this->sendConfirm($user);
 
         return new RegisterResponse('The letter was sent to the email: ' . $user->getEmail());
+    }
+
+    private function sendConfirm(User $user): void
+    {
+        $token = $this->createRegisterToken($user);
+        $event = new EmailRegisterEvent($user, $token);
+        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_REGISTER);
     }
 
     /**
      * @param int $userId
      * @return string
      */
-    private function createKey(int $userId): string
+    private function createRegisterKey(int $userId): string
     {
         return $userId . '_email_reg';
+    }
+
+    /**
+     * @param RecoverPasswordRequest $recoverPasswordRequest
+     * @return RecoverResponse
+     */
+    public function recoverPassword(RecoverPasswordRequest $recoverPasswordRequest): RecoverResponse
+    {
+        $user = $this->userService->findActiveByEmail($recoverPasswordRequest->getContact());
+
+        if (!$user instanceof User) {
+            return new RecoverResponse('User not found', Response::HTTP_NOT_FOUND);
+        }
+
+        $this->sendRecoverPassword($user);
+
+        return new RecoverResponse('The letter was sent to the email: ' . $user->getEmail());
+    }
+
+    private function sendRecoverPassword(User $user): void
+    {
+        $token = $this->createRecoverPasswordToken($user);
+        $event = new EmailRecoverPasswordEvent($user, $token);
+        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_RECOVER_PASSWORD);
+    }
+
+    private function createRecoverPasswordToken(User $user): string
+    {
+        $redisKey = $this->createRecoverPasswordKey($user->getId());
+        $token = md5($user->getEmail() . time());
+        $this->redis->set($redisKey, $token, 86400);
+
+        return $token;
+    }
+
+    /**
+     * @param int $userId
+     * @return string
+     */
+    private function createRecoverPasswordKey(int $userId): string
+    {
+        return $userId . '_email_rec_pas';
     }
 }

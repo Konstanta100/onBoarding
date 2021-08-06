@@ -35,6 +35,16 @@ class UserService
         return $this->userRepository->findByEmail($email);
     }
 
+    /**
+     * @param string $email
+     * @return User|null
+     */
+    public function findActiveByEmail(string $email): ?User
+    {
+        return $this->userRepository->findActiveByEmail($email);
+    }
+
+
     public function registerByEmail(RegisterRequest $registerRequest): User
     {
         $user = new User();

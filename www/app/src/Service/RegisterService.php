@@ -6,7 +6,9 @@ namespace App\Service;
 
 use App\Dto\Request\ConfirmEmailRequest;
 use App\Dto\Request\ConfirmUserRequest;
+use App\Dto\Request\RecoverPasswordRequest;
 use App\Dto\Request\RegisterRequest;
+use App\Dto\Response\RecoverResponse;
 use App\Dto\Response\RegisterResponse;
 
 class RegisterService
@@ -41,5 +43,10 @@ class RegisterService
     public function confirmContact(ConfirmEmailRequest $confirmEmailRequest): RegisterResponse
     {
         return $this->registerStrategy->confirmContact($confirmEmailRequest);
+    }
+
+    public function recoverPassword(RecoverPasswordRequest $confirmEmailRequest): RecoverResponse
+    {
+        return $this->registerStrategy->recoverPassword($confirmEmailRequest);
     }
 }

@@ -6,11 +6,14 @@ trikoder_oauth2:
 
         encryption_key: '%env(string:OAUTH2_ENCRYPTION_KEY)%'   # (Optional) Change this
 
-        access_token_ttl: PT1H
+        access_token_ttl: P1D
 
         refresh_token_ttl: P7D
 
-        enable_password_grant: true
+        grant_types:
+            password:
+                enable: true
+                access_token_ttl: P1D
 
     resource_server:
         public_key: /var/www/app/oauth/public.key                       # Change this

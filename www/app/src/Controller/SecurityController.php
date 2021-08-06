@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Dto\Request\ConfirmEmailRequest;
 use App\Dto\Request\ConfirmUserRequest;
 use App\Dto\Request\LoginRequest;
+use App\Dto\Request\RecoverPasswordRequest;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
 use App\Service\RegisterService;
@@ -70,5 +71,19 @@ class SecurityController extends AbstractController
         $confirmEmailResponse = $this->registerService->confirmContact($confirmEmailRequest);
 
         return $this->json($confirmEmailResponse, $confirmEmailResponse->getCode());
+    }
+
+    /**
+     * @Route("/recoverPassword", name="recoverPassword", methods={"POST"})
+     * @param RecoverPasswordRequest $recoverPasswordRequest
+     * @return JsonResponse
+     */
+    public function recoverPasswordAction(RecoverPasswordRequest $recoverPasswordRequest): JsonResponse
+    {
+        $this->registerService->setStrategy($this->emailRegister);
+
+        $recoverPasswordResponse = $this->registerService->recoverPassword($recoverPasswordRequest);
+
+        return $this->json($recoverPasswordResponse, $recoverPasswordResponse->getCode());
     }
 }

@@ -15,7 +15,11 @@ abstract class ContactRegister
 
     protected Redis $redis;
 
-    function __construct(UserService $userService, EventDispatcherInterface $eventDispatcher, Redis $redis)
+    function __construct(
+        UserService $userService,
+        EventDispatcherInterface $eventDispatcher,
+        Redis $redis
+    )
     {
         $this->userService = $userService;
         $this->eventDispatcher = $eventDispatcher;

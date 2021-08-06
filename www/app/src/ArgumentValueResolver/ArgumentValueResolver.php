@@ -10,9 +10,7 @@ use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
-use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Exception\Api\ApiValidationException;
 
 /**
  * Class ArgumentValueResolver
@@ -49,7 +47,7 @@ class ArgumentValueResolver implements ArgumentValueResolverInterface
      * @param Request $request
      * @param ArgumentMetadata $argument
      * @return \Generator|iterable
-     * @throws ApiValidationException
+     * @throws ValidationException
      */
     public function resolve(Request $request, ArgumentMetadata $argument)
     {
@@ -69,7 +67,7 @@ class ArgumentValueResolver implements ArgumentValueResolverInterface
                 }
             }
 
-            throw new ApiValidationException($errors);
+            throw new ValidationException($errors);
         }
 
         yield $argumentObj;
