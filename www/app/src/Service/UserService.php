@@ -45,7 +45,7 @@ class UserService
     }
 
 
-    public function registerByEmail(RegisterRequest $registerRequest): User
+    public function createByEmail(RegisterRequest $registerRequest): User
     {
         $user = new User();
         $password = $this->passwordEncoder->encodePassword($user, $registerRequest->getPassword());

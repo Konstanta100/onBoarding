@@ -31,28 +31,28 @@ class RegisterService
         $this->registerStrategy = $registerStrategy;
     }
 
-    public function initiate(RegisterRequest $registerRequest): DataResponse
+    public function initiate(RegisterRequest $request): DataResponse
     {
-        return $this->registerStrategy->initiate($registerRequest);
+        return $this->registerStrategy->initiate($request);
     }
 
-    public function confirm(ConfirmUserRequest $confirmRequest): DataResponse
+    public function confirm(ConfirmUserRequest $request): DataResponse
     {
-        return $this->registerStrategy->confirmUser($confirmRequest);
+        return $this->registerStrategy->confirmUser($request);
     }
 
-    public function confirmContact(ConfirmContactRequest $confirmEmailRequest): DataResponse
+    public function confirmContact(ConfirmContactRequest $request): DataResponse
     {
-        return $this->registerStrategy->confirmContact($confirmEmailRequest);
+        return $this->registerStrategy->confirmContact($request);
     }
 
-    public function recoverPassword(RecoverPasswordRequest $confirmEmailRequest): DataResponse
+    public function recoverPassword(RecoverPasswordRequest $request): DataResponse
     {
-        return $this->registerStrategy->recoverPassword($confirmEmailRequest);
+        return $this->registerStrategy->recoverPassword($request);
     }
 
-    public function acceptPassword(AcceptPasswordRequest $acceptPasswordRequest): DataResponse
+    public function acceptPassword(AcceptPasswordRequest $request): DataResponse
     {
-        return $this->registerStrategy->acceptPassword($acceptPasswordRequest);
+        return $this->registerStrategy->acceptPassword($request);
     }
 }

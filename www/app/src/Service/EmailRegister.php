@@ -15,59 +15,66 @@ use App\Entity\User;
 use App\Event\EmailRecoverPasswordEvent;
 use App\Event\UserEvents;
 use App\Event\EmailRegisterEvent;
+use App\Exception\TokenErrors;
+use App\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 class EmailRegister extends ContactRegister implements RegisterStrategy
 {
-    public function initiate(RegisterRequest $registerRequest): DataResponse
+    /**
+     * @param RegisterRequest $request
+     * @return DataResponse
+     */
+    public function initiate(RegisterRequest $request): DataResponse
     {
-        $user = $this->userService->findByEmail($registerRequest->getContact());
+        $user = $this->userService->findByEmail($request->getContact());
 
         if ($user instanceof User) {
-            $message = 'User with this email already exists';
-
-            if (!$user->isActive()) {
-                $message = 'User already exists. Email confirmation is required';
-            }
-
-            if ($this->redis->exists($this->getRedisKey($user->getId()))) {
-                $message = 'The confirmation email has already been sent';
-            };
-
-            return new DataResponse($message, Response::HTTP_BAD_REQUEST);
+            return new DataResponse('User with this email already exists', Response::HTTP_BAD_REQUEST);
         }
 
-        $user = $this->userService->registerByEmail($registerRequest);
+        if (!$user->isActive()) {
+            return new DataResponse('Email confirmation is required', Response::HTTP_BAD_REQUEST);
+        }
 
+        $redisKey = $this->getRedisKey($user->getId());
+
+        if ($this->redis->exists($redisKey)) {
+            return new DataResponse('Confirmation email has already been sent', Response::HTTP_BAD_REQUEST);
+        };
+
+        $user = $this->userService->createByEmail($request);
         $this->sendConfirm($user);
 
-        return new DataResponse('The letter was sent to the email: ' . $user->getEmail());
+        return new DataResponse('The email was sent to ' . $user->getEmail());
     }
 
-    public function confirmUser(ConfirmUserRequest $confirmRequest): DataResponse
+    /**
+     * @param ConfirmUserRequest $request
+     * @return DataResponse
+     * @throws UserNotFoundException
+     */
+    public function confirmUser(ConfirmUserRequest $request): DataResponse
     {
-        $userId = $confirmRequest->getUserId();
-
+        $userId = $request->getUserId();
         $redisKey = $this->getRedisKey($userId);
-
         $token = $this->redis->get($redisKey);
 
         if ($token === false) {
-            return new DataResponse('Token is missing', Response::HTTP_BAD_REQUEST);
+            return new DataResponse(TokenErrors::TOKEN_NOT_EXIST, Response::HTTP_BAD_REQUEST);
         }
 
-        if ($token === $confirmRequest->getToken()) {
-            return new DataResponse('Token did not match', Response::HTTP_BAD_REQUEST);
+        if ($token !== $request->getToken()) {
+            return new DataResponse(TokenErrors::TOKEN_NOT_MATCH, Response::HTTP_BAD_REQUEST);
         }
 
         $user = $this->userService->findById($userId);
 
         if (!$user instanceof User) {
-            return new DataResponse('User not found', Response::HTTP_NOT_FOUND);
+            throw new UserNotFoundException();
         }
 
         $this->redis->del($redisKey);
-
         $this->userService->activate($user);
 
         return new DataResponse('The email is confirmed');
@@ -77,7 +84,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
      * @param User $user
      * @return string
      */
-    private function createRegisterToken(User $user): string
+    private function createRedisToken(User $user): string
     {
         $redisKey = $this->getRedisKey($user->getId());
         $token = md5($user->getEmail() . time());
@@ -86,12 +93,15 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
         return $token;
     }
 
-    public function confirmContact(ConfirmContactRequest $confirmContactRequest): DataResponse
+    /**
+     * @throws UserNotFoundException
+     */
+    public function confirmContact(ConfirmContactRequest $request): DataResponse
     {
-        $user = $this->userService->findByEmail($confirmContactRequest->getContact());
+        $user = $this->userService->findByEmail($request->getContact());
 
         if (!$user instanceof User) {
-            return new DataResponse('User not found', Response::HTTP_NOT_FOUND);
+            throw new UserNotFoundException();
         }
 
         if ($user->isActive()) {
@@ -104,12 +114,12 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
 
         $this->sendConfirm($user);
 
-        return new DataResponse('The letter was sent to the email: ' . $user->getEmail());
+        return new DataResponse('The email was sent to ' . $user->getEmail());
     }
 
     private function sendConfirm(User $user): void
     {
-        $token = $this->createRegisterToken($user);
+        $token = $this->createRedisToken($user);
         $event = new EmailRegisterEvent($user, $token);
         $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_REGISTER);
     }
@@ -124,62 +134,50 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
     }
 
     /**
-     * @param RecoverPasswordRequest $recoverPasswordRequest
+     * @param RecoverPasswordRequest $request
      * @return DataResponse
+     * @throws UserNotFoundException
      */
-    public function recoverPassword(RecoverPasswordRequest $recoverPasswordRequest): DataResponse
+    public function recoverPassword(RecoverPasswordRequest $request): DataResponse
     {
-        $user = $this->userService->findActiveByEmail($recoverPasswordRequest->getContact());
+        $user = $this->userService->findActiveByEmail($request->getContact());
 
         if (!$user instanceof User) {
-            return new DataResponse('User not found', Response::HTTP_NOT_FOUND);
+            throw new UserNotFoundException();
         }
 
-        $this->sendRecoverPassword($user);
+        $token = $this->createRedisToken($user);
+        $event = new EmailRecoverPasswordEvent($user, $token);
+        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_RECOVER_PASSWORD);
 
         return new DataResponse('The letter was sent to the email: ' . $user->getEmail());
     }
 
-    private function sendRecoverPassword(User $user): void
+    /**
+     * @throws UserNotFoundException
+     */
+    public function acceptPassword(AcceptPasswordRequest $request): DataResponse
     {
-        $token = $this->createRecoverPasswordToken($user);
-        $event = new EmailRecoverPasswordEvent($user, $token);
-        $this->eventDispatcher->dispatch($event, UserEvents::EMAIL_RECOVER_PASSWORD);
-    }
-
-    private function createRecoverPasswordToken(User $user): string
-    {
-        $redisKey = $this->getRedisKey($user->getId());
-        $token = md5($user->getEmail() . time());
-        $this->redis->set($redisKey, $token, 86400);
-
-        return $token;
-    }
-
-    public function acceptPassword(AcceptPasswordRequest $acceptPasswordRequest): DataResponse
-    {
-        $userId = $acceptPasswordRequest->getUserId();
-
+        $userId = $request->getUserId();
         $redisKey = $this->getRedisKey($userId);
-
         $token = $this->redis->get($redisKey);
 
         if ($token === false) {
-            return new DataResponse('Token is missing', Response::HTTP_BAD_REQUEST);
+            return new DataResponse(TokenErrors::TOKEN_NOT_EXIST, Response::HTTP_BAD_REQUEST);
         }
 
-        if ($token === $acceptPasswordRequest->getToken()) {
-            return new DataResponse('Token did not match', Response::HTTP_BAD_REQUEST);
+        if ($token !== $request->getToken()) {
+            return new DataResponse(TokenErrors::TOKEN_NOT_MATCH, Response::HTTP_BAD_REQUEST);
         }
 
         $user = $this->userService->findById($userId);
 
         if (!$user instanceof User) {
-            return new DataResponse('User not found', Response::HTTP_NOT_FOUND);
+            throw new UserNotFoundException();
         }
 
         $this->redis->del($redisKey);
-        $this->userService->updatePassword($user, $acceptPasswordRequest->getPassword());
+        $this->userService->updatePassword($user, $request->getPassword());
 
         return new DataResponse('Password changed');
     }

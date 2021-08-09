@@ -3,9 +3,8 @@
 namespace App\EventListener;
 
 use App\Entity\User;
+use App\Exception\UserResolveException;
 use App\Service\UserService;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Trikoder\Bundle\OAuth2Bundle\Event\UserResolveEvent;
 
@@ -33,13 +32,14 @@ final class UserResolveListener
 
     /**
      * @param UserResolveEvent $event
+     * @throws UserResolveException
      */
     public function onUserResolve(UserResolveEvent $event): void
     {
         $user = $this->userService->findActiveByEmail($event->getUsername());
 
         if ($user instanceof User || !$this->userPasswordEncoder->isPasswordValid($user, $event->getPassword())) {
-            throw new Exception('Not valid username or login', Response::HTTP_BAD_REQUEST);
+            throw new UserResolveException();
         }
 
         $event->setUser($user);

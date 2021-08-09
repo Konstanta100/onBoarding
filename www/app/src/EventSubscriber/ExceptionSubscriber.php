@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Exception\ApiException;
 use App\Exception\ValidationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\SerializerInterface;
-use Throwable;
 
 
 class ExceptionSubscriber implements EventSubscriberInterface
@@ -34,7 +34,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $event->allowCustomResponseCode();
         $throwable = $event->getThrowable();
 
-        if($throwable instanceof Throwable){
+        if($throwable instanceof ApiException){
 
             $data['message'] = $throwable->getMessage();
 
