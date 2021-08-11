@@ -6,9 +6,9 @@ namespace App\Dto\Request;
 
 interface ConfirmContactRequest
 {
-    public function getUserId(): int;
+    public function getUserId(): ?int;
 
-    public function getToken(): string;
+    public function getToken(): ?string;
 
-    public function getPassword(): string;
+    public function getPassword(): ?string;
 }

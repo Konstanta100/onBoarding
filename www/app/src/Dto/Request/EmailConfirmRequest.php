@@ -19,9 +19,9 @@ class EmailConfirmRequest implements ConfirmContactRequest
      * @Serializer\Expose()
      * @Serializer\Type("int")
      *
-     * @var int
+     * @var int|null
      */
-    private int $userId;
+    private ?int $id = null;
 
     /**
      * @Assert\NotBlank(
@@ -30,9 +30,9 @@ class EmailConfirmRequest implements ConfirmContactRequest
      * @Serializer\Expose()
      * @Serializer\Type("string")
      *
-     * @var string
+     * @var string|null
      */
-    private string $token;
+    private ?string $token = null;
 
     /**
      * @Assert\NotBlank(
@@ -41,22 +41,22 @@ class EmailConfirmRequest implements ConfirmContactRequest
      * @Serializer\Expose()
      * @Serializer\Type("string")
      *
-     * @var string
+     * @var string|null
      */
-    private string $password;
+    private ?string $password = null;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getUserId(): int
+    public function getUserId(): ?int
     {
-        return $this->userId;
+        return $this->id;
     }
 
     /**
      * @return string
      */
-    public function getToken(): string
+    public function getToken(): ?string
     {
         return $this->token;
     }
@@ -64,7 +64,7 @@ class EmailConfirmRequest implements ConfirmContactRequest
     /**
      * @return string
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }

@@ -11,7 +11,10 @@ class ValidationError
 
     private string $property;
 
-    private string $invalidValue;
+    /**
+     * @var mixed
+     */
+    private $invalidValue;
 
     /**
      * @return string
@@ -50,18 +53,18 @@ class ValidationError
     }
 
     /**
-     * @return string
+     * @return mixed
      */
-    public function getInvalidValue(): string
+    public function getInvalidValue()
     {
         return $this->invalidValue;
     }
 
     /**
-     * @param string $invalidValue
+     * @param mixed $invalidValue
      * @return ValidationError
      */
-    public function setInvalidValue(string $invalidValue): self
+    public function setInvalidValue($invalidValue): self
     {
         $this->invalidValue = $invalidValue;
         return $this;

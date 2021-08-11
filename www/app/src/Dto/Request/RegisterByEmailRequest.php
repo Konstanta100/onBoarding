@@ -22,14 +22,14 @@ class RegisterByEmailRequest implements RegisterRequest
      * @Serializer\Expose()
      * @Serializer\Type("string")
      *
-     * @var string
+     * @var string|null
      */
-    private string $email;
+    private ?string $email = null;
 
     /**
      * @return string
      */
-    public function getContact(): string
+    public function getContact(): ?string
     {
         return $this->email;
     }

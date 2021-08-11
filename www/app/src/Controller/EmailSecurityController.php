@@ -6,6 +6,7 @@ namespace App\Controller;
 
 
 use App\Dto\Request\ConfirmContactRequest;
+use App\Dto\Request\EmailConfirmRequest;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
 use App\Service\RegisterService;
@@ -44,10 +45,10 @@ class EmailSecurityController extends AbstractController
 
     /**
      * @Route("/confirmEmail", name="confirmEmail", methods={"POST"})
-     * @param ConfirmContactRequest $request
+     * @param EmailConfirmRequest $request
      * @return JsonResponse
      */
-    public function confirmEmailAction(ConfirmContactRequest $request): JsonResponse
+    public function confirmEmailAction(EmailConfirmRequest $request): JsonResponse
     {
         $this->registerService->setStrategy($this->emailRegister);
 
