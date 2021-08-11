@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Entity\User;
@@ -36,9 +38,11 @@ final class UserResolveListener
      */
     public function onUserResolve(UserResolveEvent $event): void
     {
-        $user = $this->userService->findActiveByEmail($event->getUsername());
+        $user = $this->userService->findByEmail($event->getUsername());
 
-        if ($user instanceof User || !$this->userPasswordEncoder->isPasswordValid($user, $event->getPassword())) {
+        if ($user instanceof User ||
+            !$user->isActive() ||
+            !$this->userPasswordEncoder->isPasswordValid($user, $event->getPassword())) {
             throw new UserResolveException();
         }
 

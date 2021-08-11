@@ -27,29 +27,10 @@ class RegisterByEmailRequest implements RegisterRequest
     private string $email;
 
     /**
-     * @Assert\NotBlank(
-     *     message = "The password is not specified"
-     * )
-     * @Serializer\Expose()
-     * @Serializer\Type("string")
-     *
-     * @var string
-     */
-    private string $password;
-
-    /**
      * @return string
      */
     public function getContact(): string
     {
         return $this->email;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword(): string
-    {
-        return $this->password;
     }
 }

@@ -17,25 +17,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
+class UserRepository extends ServiceEntityRepository implements IUserSource
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
-    }
-
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     */
-    public function upgradePassword(UserInterface $user, string $newEncodedPassword): void
-    {
-        if (!$user instanceof User) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
-        }
-
-        $user->setPassword($newEncodedPassword);
-        $this->_em->persist($user);
-        $this->_em->flush();
     }
 
     /**
@@ -46,16 +32,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->findOneBy(['email' => $email]);
     }
-
-    /**
-     * @param string $email
-     * @return User|null
-     */
-    public function findActiveByEmail(string $email): ?User
-    {
-        return $this->findOneBy(['email' => $email, 'active' => true]);
-    }
-
 
     /**
      * @param User $user
@@ -69,17 +45,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @param User $user
      */
-    public function remove(User $user): void
+    public function delete(User $user): void
     {
         $this->_em->remove($user);
         $this->_em->flush();
     }
 
     /**
-     * @param mixed $userId
+     * @param int $userId
      * @return User|null
      */
-    public function findById($userId): ?User
+    public function findById(int $userId): ?User
     {
         return $this->find($userId);
     }

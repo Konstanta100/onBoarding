@@ -8,21 +8,21 @@ namespace App\Service;
 
 use App\Dto\Request\RegisterRequest;
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Repository\IUserSource;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserService
 {
-    private UserRepository $userRepository;
+    private IUserSource $userSource;
 
     protected UserPasswordEncoderInterface $passwordEncoder;
 
     public function __construct(
-        UserRepository $userRepository,
+        IUserSource $userSource,
         UserPasswordEncoderInterface $passwordEncoder
     )
     {
-        $this->userRepository = $userRepository;
+        $this->userSource = $userSource;
         $this->passwordEncoder = $passwordEncoder;
     }
 
@@ -32,26 +32,14 @@ class UserService
      */
     public function findByEmail(string $email): ?User
     {
-        return $this->userRepository->findByEmail($email);
+        return $this->userSource->findByEmail($email);
     }
-
-    /**
-     * @param string $email
-     * @return User|null
-     */
-    public function findActiveByEmail(string $email): ?User
-    {
-        return $this->userRepository->findActiveByEmail($email);
-    }
-
 
     public function createByEmail(RegisterRequest $registerRequest): User
     {
         $user = new User();
-        $password = $this->passwordEncoder->encodePassword($user, $registerRequest->getPassword());
-        $user->setPassword($password);
         $user->setEmail($registerRequest->getContact());
-        $this->userRepository->save($user);
+        $this->userSource->save($user);
 
         return $user;
     }
@@ -62,17 +50,19 @@ class UserService
      */
     public function findById(int $userId): ?User
     {
-        return $this->userRepository->findById($userId);
+        return $this->userSource->findById($userId);
     }
 
-    public function activate(User $user): void
+    public function confirmByEmail(User $user, string $newPassword): void
     {
         $user->setActive(true);
-        $this->userRepository->save($user);
+        $this->updatePassword($user, $newPassword);
     }
 
-    public function updatePassword(User $user, string $password)
+    public function updatePassword(User $user, string $newPassword)
     {
-        $user->setPassword($password);
+        $newPassword = $this->passwordEncoder->encodePassword($user, $newPassword);
+        $user->setPassword($newPassword);
+        $this->userSource->save($user);
     }
 }

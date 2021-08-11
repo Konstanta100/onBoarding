@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Dto\Request;
 
@@ -9,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @Serializer\ExclusionPolicy("all")
  */
-class EmailAcceptPasswordRequest implements AcceptPasswordRequest
+class EmailConfirmRequest implements ConfirmContactRequest
 {
     /**
      * @Assert\NotBlank(
@@ -21,7 +22,6 @@ class EmailAcceptPasswordRequest implements AcceptPasswordRequest
      * @var int
      */
     private int $userId;
-
 
     /**
      * @Assert\NotBlank(
@@ -46,6 +46,14 @@ class EmailAcceptPasswordRequest implements AcceptPasswordRequest
     private string $password;
 
     /**
+     * @return int
+     */
+    public function getUserId(): int
+    {
+        return $this->userId;
+    }
+
+    /**
      * @return string
      */
     public function getToken(): string
@@ -59,13 +67,5 @@ class EmailAcceptPasswordRequest implements AcceptPasswordRequest
     public function getPassword(): string
     {
         return $this->password;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserId(): int
-    {
-        return $this->userId;
     }
 }

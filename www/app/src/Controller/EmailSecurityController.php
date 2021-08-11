@@ -1,13 +1,11 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Controller;
 
 
-use App\Dto\Request\AcceptPasswordRequest;
-use App\Dto\Request\ConfirmEmailRequest;
-use App\Dto\Request\ConfirmUserRequest;
-use App\Dto\Request\RecoverPasswordRequest;
+use App\Dto\Request\ConfirmContactRequest;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
 use App\Service\RegisterService;
@@ -45,59 +43,30 @@ class EmailSecurityController extends AbstractController
     }
 
     /**
-     * @Route("/confirmEmail/{token}/user/{userId}", name="confirmEmail", methods={"GET"})
-     * @param string $token
-     * @param int $userId
+     * @Route("/confirmEmail", name="confirmEmail", methods={"POST"})
+     * @param ConfirmContactRequest $request
      * @return JsonResponse
      */
-    public function confirmEmailAction(string $token, int $userId): JsonResponse
+    public function confirmEmailAction(ConfirmContactRequest $request): JsonResponse
     {
         $this->registerService->setStrategy($this->emailRegister);
 
-        $confirmResponse = $this->registerService->confirm(new ConfirmUserRequest($userId, $token));
+        $confirmResponse = $this->registerService->confirm($request);
 
         return $this->json($confirmResponse, $confirmResponse->getCode());
     }
 
     /**
-     * @Route("/sendEmailConfirm", name="sendEmailConfirm", methods={"POST"})
-     * @param ConfirmEmailRequest $confirmEmailRequest
-     * @return JsonResponse
-     */
-    public function sendEmailConfirmAction(ConfirmEmailRequest $confirmEmailRequest): JsonResponse
-    {
-        $this->registerService->setStrategy($this->emailRegister);
-
-        $confirmEmailResponse = $this->registerService->confirmContact($confirmEmailRequest);
-
-        return $this->json($confirmEmailResponse, $confirmEmailResponse->getCode());
-    }
-
-    /**
      * @Route("/recoverPassword", name="recoverPassword", methods={"POST"})
-     * @param RecoverPasswordRequest $recoverPasswordRequest
+     * @param RegisterByEmailRequest $recoverPasswordRequest
      * @return JsonResponse
      */
-    public function recoverPasswordAction(RecoverPasswordRequest $recoverPasswordRequest): JsonResponse
+    public function recoverPasswordAction(RegisterByEmailRequest $recoverPasswordRequest): JsonResponse
     {
         $this->registerService->setStrategy($this->emailRegister);
 
         $recoverPasswordResponse = $this->registerService->recoverPassword($recoverPasswordRequest);
 
         return $this->json($recoverPasswordResponse, $recoverPasswordResponse->getCode());
-    }
-
-    /**
-     * @Route("/acceptPassword", name="acceptPassword", methods={"POST"})
-     * @param AcceptPasswordRequest $acceptPasswordRequest
-     * @return JsonResponse
-     */
-    public function acceptPasswordEmail(AcceptPasswordRequest $acceptPasswordRequest): JsonResponse
-    {
-        $this->registerService->setStrategy($this->emailRegister);
-
-        $acceptPasswordResponse = $this->registerService->acceptPassword($acceptPasswordRequest);
-
-        return $this->json($acceptPasswordResponse, $acceptPasswordResponse->getCode());
     }
 }
