@@ -39,7 +39,13 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      */
-    private bool $active = false;
+    private bool $active = true;
+
+    /**
+     * @ORM\Column(type="smallint")
+     */
+    private int $channelConfirmed = 0;
+
 
     public function getId(): ?string
     {
@@ -130,6 +136,24 @@ class User implements UserInterface
     public function setActive(bool $active): self
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getChannelConfirmed(): int
+    {
+        return $this->channelConfirmed;
+    }
+
+    /**
+     * @param int $channel
+     */
+    public function setChannelConfirmed(int $channel): self
+    {
+        $this->channelConfirmed = $channel;
 
         return $this;
     }

@@ -7,18 +7,20 @@ namespace App\Service;
 
 
 use App\Dto\Request\RegisterRequest;
+use App\Entity\ChannelContact;
 use App\Entity\User;
-use App\Repository\IUserSource;
+use App\Exception\UserPasswordRepeatException;
+use App\Repository\UserSourceInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserService
 {
-    private IUserSource $userSource;
+    private UserSourceInterface $userSource;
 
     protected UserPasswordEncoderInterface $passwordEncoder;
 
     public function __construct(
-        IUserSource $userSource,
+        UserSourceInterface $userSource,
         UserPasswordEncoderInterface $passwordEncoder
     )
     {
@@ -35,6 +37,10 @@ class UserService
         return $this->userSource->findByEmail($email);
     }
 
+    /**
+     * @param RegisterRequest $registerRequest
+     * @return User
+     */
     public function createByEmail(RegisterRequest $registerRequest): User
     {
         $user = new User();
@@ -55,13 +61,26 @@ class UserService
 
     public function confirmByEmail(User $user, string $newPassword): void
     {
-        $user->setActive(true);
+        if ($user->getChannelConfirmed() === ChannelContact::NONE) {
+            $user->setChannelConfirmed(ChannelContact::EMAIL);
+        }
+
         $this->updatePassword($user, $newPassword);
     }
 
-    public function updatePassword(User $user, string $newPassword)
+    /**
+     * @param User $user
+     * @param string $newPassword
+     * @throws UserPasswordRepeatException
+     */
+    public function updatePassword(User $user, string $newPassword): void
     {
         $newPassword = $this->passwordEncoder->encodePassword($user, $newPassword);
+
+        if ($user->getPassword() === $newPassword) {
+            throw new UserPasswordRepeatException();
+        }
+
         $user->setPassword($newPassword);
         $this->userSource->save($user);
     }

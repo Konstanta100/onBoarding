@@ -8,10 +8,12 @@ namespace App\Service;
 use App\Dto\Request\ConfirmContactRequest;
 use App\Dto\Response\DataResponse;
 use App\Dto\Request\RegisterRequest;
+use App\Entity\ChannelContact;
 use App\Entity\User;
 use App\Event\EmailRecoverPasswordEvent;
 use App\Event\UserEvents;
 use App\Event\EmailRegisterEvent;
+use App\Exception\UserBlockException;
 use App\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,6 +22,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
     /**
      * @param RegisterRequest $request
      * @return DataResponse
+     * @throws UserBlockException
      */
     public function initiate(RegisterRequest $request): DataResponse
     {
@@ -29,7 +32,11 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             $user = $this->userService->createByEmail($request);
         }
 
-        if ($user->isActive()) {
+        if (!$user->isActive()) {
+            throw new UserBlockException();
+        }
+
+        if (in_array($user->getChannelConfirmed(), ChannelContact::getEmailChannels(), true )) {
             return new DataResponse('User with this email already register', Response::HTTP_BAD_REQUEST);
         }
 
@@ -74,8 +81,8 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             throw new UserNotFoundException();
         }
 
-        $this->redis->del($token);
         $this->userService->confirmByEmail($user, $request->getPassword());
+        $this->redis->del($redisKey);
 
         return new DataResponse('User data is confirmed');
     }
@@ -84,6 +91,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
      * @param RegisterRequest $request
      * @return DataResponse
      * @throws UserNotFoundException
+     * @throws UserBlockException
      */
     public function recoverPassword(RegisterRequest $request): DataResponse
     {
@@ -94,7 +102,11 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
         }
 
         if (!$user->isActive()) {
-            return new DataResponse('User with this email is not register', Response::HTTP_BAD_REQUEST);
+            throw new UserBlockException();
+        }
+
+        if(!in_array($user->getChannelConfirmed(), ChannelContact::getEmailChannels())){
+            return new DataResponse('User is not register', Response::HTTP_BAD_REQUEST);
         }
 
         $redisKey = $this->getRedisKey($user->getId());

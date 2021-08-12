@@ -8,10 +8,10 @@ use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserResolveException extends Exception implements ApiThrowableInterface
+class UserPasswordRepeatException extends Exception
 {
     public function __construct(
-        $message = 'Not valid username or password',
+        $message = 'The password was used earlier',
         $code = Response::HTTP_BAD_REQUEST,
         Throwable $previous = null)
     {

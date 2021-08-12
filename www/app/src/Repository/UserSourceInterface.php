@@ -6,7 +6,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 
-interface IUserSource
+interface UserSourceInterface
 {
     public function findByEmail(string $email);
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
+use App\Entity\ChannelContact;
 use App\Entity\User;
+use App\Exception\UserBlockException;
 use App\Exception\UserResolveException;
 use App\Service\UserService;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -35,6 +37,7 @@ final class UserResolveListener
     /**
      * @param UserResolveEvent $event
      * @throws UserResolveException
+     * @throws UserBlockException
      */
     public function onUserResolve(UserResolveEvent $event): void
     {
@@ -44,8 +47,13 @@ final class UserResolveListener
             throw new UserResolveException();
         }
 
-        if (!($user->isActive() || $this->userPasswordEncoder->isPasswordValid($user, $event->getPassword()))){
+        if (!(in_array($user->getChannelConfirmed(), ChannelContact::getChannels()) ||
+            $this->userPasswordEncoder->isPasswordValid($user, $event->getPassword()))){
             throw new UserResolveException();
+        }
+
+        if(!$user->isActive()){
+            throw new UserBlockException();
         }
 
         $event->setUser($user);

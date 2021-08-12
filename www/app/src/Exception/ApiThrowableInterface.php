@@ -4,7 +4,7 @@
 namespace App\Exception;
 
 
-interface ApiException
+interface ApiThrowableInterface
 {
 
 }

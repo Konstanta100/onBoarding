@@ -8,12 +8,13 @@ use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserResolveException extends Exception implements ApiThrowableInterface
+class UserBlockException extends Exception implements ApiThrowableInterface
 {
     public function __construct(
-        $message = 'Not valid username or password',
+        $message = "User is blocked",
         $code = Response::HTTP_BAD_REQUEST,
-        Throwable $previous = null)
+        Throwable $previous = null
+    )
     {
         parent::__construct($message, $code, $previous);
     }
