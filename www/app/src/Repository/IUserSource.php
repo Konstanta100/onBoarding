@@ -10,7 +10,7 @@ interface IUserSource
 {
     public function findByEmail(string $email);
 
-    public function findById(int $userId);
+    public function findById(string $userId);
 
     public function save(User $user);
 

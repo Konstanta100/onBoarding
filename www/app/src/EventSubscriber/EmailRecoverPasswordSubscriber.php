@@ -32,7 +32,6 @@ class EmailRecoverPasswordSubscriber implements EventSubscriberInterface
      */
     public function onEmailRecoverPassword(EmailRecoverPasswordEvent $event): void
     {
-        $user = $event->getUser();
         $token = $event->getToken();
 
         $subject = "Смена пароля на сайте " . $_SERVER['HTTP_HOST'];
@@ -44,10 +43,9 @@ class EmailRecoverPasswordSubscriber implements EventSubscriberInterface
         $message = 'Здравствуйте! Чтобы сменить пароль, пройдите по ссылке ниже.
         Указав метод POST и теле запроса в формате application/json новый пароль ключ "password".
         ВНИМАНИЕ! Ссылка действительная 24 часа. Если вы не запрашивали смену пароля проигнорируйте это письмо.';
-        $methodBody = json_encode(['token' => $token, 'userId' => $user->getId(), 'password' => '']);
+        $methodBody = json_encode(['token' => $token, 'password' => '']);
 
-        $email = (new Email())->from('hello@example.com')
-            ->to($event->getUser()->getEmail())
+        $email = (new Email())->to($event->getUser()->getEmail())
             ->subject($subject)
             ->text($textLink)
             ->html("<p>{$message}</p><p>$link</p><p><code>{$methodBody}</code></p>");

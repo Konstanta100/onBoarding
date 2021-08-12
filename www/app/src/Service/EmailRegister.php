@@ -6,14 +6,12 @@ namespace App\Service;
 
 
 use App\Dto\Request\ConfirmContactRequest;
-use App\Dto\Request\RecoverPasswordRequest;
 use App\Dto\Response\DataResponse;
 use App\Dto\Request\RegisterRequest;
 use App\Entity\User;
 use App\Event\EmailRecoverPasswordEvent;
 use App\Event\UserEvents;
 use App\Event\EmailRegisterEvent;
-use App\Exception\TokenErrors;
 use App\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -42,7 +40,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
         };
 
         $this->eventDispatcher->dispatch(
-            new EmailRegisterEvent($user, $this->createRedisToken($user)),
+            new EmailRegisterEvent($user, $this->setRedisToken($user)),
             UserEvents::EMAIL_REGISTER
         );
 
@@ -57,15 +55,17 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
     public function confirm(ConfirmContactRequest $request): DataResponse
     {
         $userId = $request->getUserId();
+
         $redisKey = $this->getRedisKey($userId);
+
         $token = $this->redis->get($redisKey);
 
         if ($token === false) {
-            return new DataResponse(TokenErrors::TOKEN_NOT_EXIST, Response::HTTP_BAD_REQUEST);
+            return new DataResponse('Token not found', Response::HTTP_BAD_REQUEST);
         }
 
         if ($token !== $request->getToken()) {
-            return new DataResponse(TokenErrors::TOKEN_NOT_MATCH, Response::HTTP_BAD_REQUEST);
+            return new DataResponse('Token is not match', Response::HTTP_BAD_REQUEST);
         }
 
         $user = $this->userService->findById($userId);
@@ -74,7 +74,7 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             throw new UserNotFoundException();
         }
 
-        $this->redis->del($redisKey);
+        $this->redis->del($token);
         $this->userService->confirmByEmail($user, $request->getPassword());
 
         return new DataResponse('User data is confirmed');
@@ -93,8 +93,18 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
             throw new UserNotFoundException();
         }
 
+        if (!$user->isActive()) {
+            return new DataResponse('User with this email is not register', Response::HTTP_BAD_REQUEST);
+        }
+
+        $redisKey = $this->getRedisKey($user->getId());
+
+        if ($this->redis->exists($redisKey)) {
+            return new DataResponse('The confirmation email has already been sent', Response::HTTP_BAD_REQUEST);
+        };
+
         $this->eventDispatcher->dispatch(
-            new EmailRecoverPasswordEvent($user, $this->createRedisToken($user)),
+            new EmailRecoverPasswordEvent($user, $this->setRedisToken($user)),
             UserEvents::EMAIL_RECOVER_PASSWORD
         );
 
@@ -105,20 +115,20 @@ class EmailRegister extends ContactRegister implements RegisterStrategy
      * @param User $user
      * @return string
      */
-    private function createRedisToken(User $user): string
+    private function setRedisToken(User $user): string
     {
+        $token = md5($user->getId() . $user->getEmail() . time());
         $redisKey = $this->getRedisKey($user->getId());
-        $token = md5($user->getEmail() . time());
-        $this->redis->set($redisKey, $token, 86400);
+        $this->redis->set($redisKey, $token, 3600);
 
         return $token;
     }
 
     /**
-     * @param int $userId
+     * @param string $userId
      * @return string
      */
-    private function getRedisKey(int $userId): string
+    private function getRedisKey(string $userId): string
     {
         return $userId . '_email';
     }

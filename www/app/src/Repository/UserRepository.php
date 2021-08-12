@@ -52,10 +52,10 @@ class UserRepository extends ServiceEntityRepository implements IUserSource
     }
 
     /**
-     * @param int $userId
+     * @param string $userId
      * @return User|null
      */
-    public function findById(int $userId): ?User
+    public function findById(string $userId): ?User
     {
         return $this->find($userId);
     }

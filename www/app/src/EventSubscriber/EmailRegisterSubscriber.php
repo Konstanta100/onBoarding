@@ -32,24 +32,24 @@ class EmailRegisterSubscriber implements EventSubscriberInterface
      */
     public function onEmailRegister(EmailRegisterEvent $event): void
     {
-        $user = $event->getUser();
         $token = $event->getToken();
 
         $subject = "Подтверждение почты на сайте " . $_SERVER['HTTP_HOST'];
         $subject = "=?utf-8?B?" . base64_encode($subject) . "?=";
 
-        $textLink = 'http://' . $_SERVER['HTTP_HOST'] . '/api/confirmEmail/' . $token . '/user/' . $user->getId();
+        $textLink = 'http://' . $_SERVER['HTTP_HOST'] . '/confirmEmail';
         $link = "<a href={$textLink}>{$textLink}</a>";
 
         $message = 'Здравствуйте! Чтобы войти, перейдите по ссылке ниже. ВНИМАНИЕ!
         Ссылка действительная 24 часа. Если вы не запрашивали ссылку для входа,
         просто проигнорируйте это письмо.';
 
-        $email = (new Email())->from('hello@example.com')
-            ->to($event->getUser()->getEmail())
+        $methodBody = json_encode(['token' => $token, 'password' => '']);
+
+        $email = (new Email())->to($event->getUser()->getEmail())
             ->subject($subject)
             ->text($textLink)
-            ->html("<p>{$message}</p><p>{$link}</p>");
+            ->html("<p>{$message}</p><p>{$link}</p><p><code>{$methodBody}</code></p>");
 
         $this->mailer->send($email);
     }

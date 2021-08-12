@@ -40,9 +40,11 @@ final class UserResolveListener
     {
         $user = $this->userService->findByEmail($event->getUsername());
 
-        if ($user instanceof User ||
-            !$user->isActive() ||
-            !$this->userPasswordEncoder->isPasswordValid($user, $event->getPassword())) {
+        if (!$user instanceof User){
+            throw new UserResolveException();
+        }
+
+        if (!($user->isActive() || $this->userPasswordEncoder->isPasswordValid($user, $event->getPassword()))){
             throw new UserResolveException();
         }
 

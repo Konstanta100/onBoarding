@@ -17,11 +17,11 @@ class EmailConfirmRequest implements ConfirmContactRequest
      *     message = "The userId is not specified"
      * )
      * @Serializer\Expose()
-     * @Serializer\Type("int")
+     * @Serializer\Type("string")
      *
-     * @var int|null
+     * @var string|null
      */
-    private ?int $id = null;
+    private ?string $id = null;
 
     /**
      * @Assert\NotBlank(
@@ -46,9 +46,9 @@ class EmailConfirmRequest implements ConfirmContactRequest
     private ?string $password = null;
 
     /**
-     * @return int|null
+     * @return string|null
      */
-    public function getUserId(): ?int
+    public function getUserId(): ?string
     {
         return $this->id;
     }

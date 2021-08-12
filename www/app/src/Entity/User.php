@@ -41,9 +41,9 @@ class User implements UserInterface
      */
     private bool $active = false;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return (string)$this->id;
     }
 
     public function getEmail(): ?string
