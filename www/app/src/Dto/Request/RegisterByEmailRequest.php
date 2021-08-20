@@ -27,10 +27,26 @@ class RegisterByEmailRequest implements RegisterRequest
     private ?string $email = null;
 
     /**
-     * @return string
+     * @Serializer\Expose()
+     * @Serializer\Type("string")
+     *
+     * @var string|null
+     */
+    private ?string $password = null;
+
+    /**
+     * @return string|null
      */
     public function getContact(): ?string
     {
         return $this->email;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPassword(): ?string
+    {
+        return $this->password;
     }
 }

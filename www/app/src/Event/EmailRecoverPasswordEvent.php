@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace App\Event;
 
 use App\Entity\User;
-use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class EmailRegisterEvent
  * @package App\Event
  */
-class EmailRecoverPasswordEvent extends Event
+class EmailRecoverPasswordEvent extends EmailEvent
 {
-    private User $user;
-
-    private string $token;
-
     /**
      * EmailRegisterEvent constructor.
      * @param User $user
@@ -24,23 +19,19 @@ class EmailRecoverPasswordEvent extends Event
      */
     public function __construct(User $user, string $token)
     {
-        $this->user = $user;
-        $this->token = $token;
+        parent::__construct($user);
+        $subject = 'Смена пароля на сайте ' . $_SERVER['HTTP_HOST'];
+
+        $this->convertSubject($subject);
+        $this->textLink = "http://" . $_SERVER['HTTP_HOST'] . "confirmPasswordEmail/token=" . $token;
+        $this->createTemplate();
     }
 
-    /**
-     * @return User
-     */
-    public function getUser(): User
+    protected function createTemplate(): void
     {
-        return $this->user;
-    }
-
-    /**
-     * @return string
-     */
-    public function getToken(): string
-    {
-        return $this->token;
+        $message = 'Здравствуйте! Чтобы сменить пароль, пройдите по ссылке ниже.
+            ВНИМАНИЕ! Ссылка действительная 24 часа. Если вы не запрашивали смену пароля проигнорируйте это письмо.';
+        $link = "<a href={$this->textLink}>{$this->textLink}</a>";
+        $this->template = "<p>{$message}</p><p>{$link}</p>";
     }
 }

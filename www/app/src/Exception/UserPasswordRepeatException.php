@@ -4,11 +4,10 @@
 namespace App\Exception;
 
 
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserPasswordRepeatException extends Exception
+class UserPasswordRepeatException extends ApiException
 {
     public function __construct(
         $message = 'The password was used earlier',

@@ -5,7 +5,7 @@ namespace App\Exception;
 use App\Dto\ValidationError;
 use Throwable;
 
-class ValidationException extends \Exception implements ApiThrowableInterface
+class ValidationException extends ApiException
 {
     /**
      * Validation error messages.

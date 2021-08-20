@@ -47,8 +47,11 @@ final class UserResolveListener
             throw new UserResolveException();
         }
 
-        if (!(in_array($user->getChannelConfirmed(), ChannelContact::getChannels()) ||
-            $this->userPasswordEncoder->isPasswordValid($user, $event->getPassword()))){
+        if ($user->getChannelConfirmed() === ChannelContact::NONE){
+            throw new UserResolveException();
+        }
+
+        if($this->userPasswordEncoder->isPasswordValid($user, $event->getPassword())){
             throw new UserResolveException();
         }
 

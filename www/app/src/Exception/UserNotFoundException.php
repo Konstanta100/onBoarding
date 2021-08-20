@@ -4,11 +4,10 @@
 namespace App\Exception;
 
 
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserNotFoundException extends Exception implements ApiThrowableInterface
+class UserNotFoundException extends ApiException
 {
     public function __construct(
         $message = "User not found",

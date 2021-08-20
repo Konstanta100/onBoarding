@@ -38,14 +38,15 @@ class UserService
     }
 
     /**
-     * @param RegisterRequest $registerRequest
+     * @param RegisterRequest $request
      * @return User
+     * @throws UserPasswordRepeatException
      */
-    public function createByEmail(RegisterRequest $registerRequest): User
+    public function createByEmail(RegisterRequest $request): User
     {
         $user = new User();
-        $user->setEmail($registerRequest->getContact());
-        $this->userSource->save($user);
+        $user->setEmail($request->getContact());
+        $this->updatePassword($user, $request->getPassword());
 
         return $user;
     }
@@ -59,13 +60,11 @@ class UserService
         return $this->userSource->findById($userId);
     }
 
-    public function confirmByEmail(User $user, string $newPassword): void
+    public function confirmEmail(User $user): void
     {
-        if ($user->getChannelConfirmed() === ChannelContact::NONE) {
-            $user->setChannelConfirmed(ChannelContact::EMAIL);
-        }
-
-        $this->updatePassword($user, $newPassword);
+        $newChannel = $user->getChannelConfirmed() | ChannelContact::EMAIL;
+        $user->setChannelConfirmed($newChannel);
+        $this->userSource->save($user);
     }
 
     /**
@@ -77,6 +76,7 @@ class UserService
     {
         $newPassword = $this->passwordEncoder->encodePassword($user, $newPassword);
 
+        //TODO create validator password
         if ($user->getPassword() === $newPassword) {
             throw new UserPasswordRepeatException();
         }

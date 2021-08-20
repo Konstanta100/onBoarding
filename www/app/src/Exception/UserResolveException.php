@@ -4,11 +4,10 @@
 namespace App\Exception;
 
 
-use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class UserResolveException extends Exception implements ApiThrowableInterface
+class UserResolveException extends ApiException
 {
     public function __construct(
         $message = 'Not valid username or password',

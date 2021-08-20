@@ -5,69 +5,69 @@ declare(strict_types=1);
 namespace App\Controller;
 
 
-use App\Dto\Request\ConfirmContactRequest;
+use App\Dto\Request\ContactConfirmRequest;
 use App\Dto\Request\EmailConfirmRequest;
 use App\Dto\Request\RegisterByEmailRequest;
 use App\Service\EmailRegister;
-use App\Service\RegisterService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class EmailSecurityController extends AbstractController
 {
-    private RegisterService $registerService;
-
     private EmailRegister $emailRegister;
 
-    public function __construct(
-        RegisterService $registerService,
-        EmailRegister $emailRegister
-    )
+    public function __construct(EmailRegister $emailRegister)
     {
-        $this->registerService = $registerService;
         $this->emailRegister = $emailRegister;
     }
 
     /**
      * @Route("/registerEmail", name="registerEmail", methods={"POST"})
-     * @param RegisterByEmailRequest $registerRequest
+     * @param RegisterByEmailRequest $request
      * @return JsonResponse
      */
-    public function registerEmailAction(RegisterByEmailRequest $registerRequest): JsonResponse
+    public function registerEmailAction(RegisterByEmailRequest $request): JsonResponse
     {
-        $this->registerService->setStrategy($this->emailRegister);
+        $response = $this->emailRegister->initiate($request);
 
-        $registerResponse = $this->registerService->initiate($registerRequest);
-
-        return $this->json($registerResponse, $registerResponse->getCode());
+        return $this->json($response, $response->getCode());
     }
 
     /**
-     * @Route("/confirmEmail", name="confirmEmail", methods={"POST"})
-     * @param EmailConfirmRequest $request
+     * @Route("/confirmEmail/token={token}", name="confirmEmail", methods={"POST"}, requirements={"token"="\d{32}"}))
+     * @param string $token
      * @return JsonResponse
      */
-    public function confirmEmailAction(EmailConfirmRequest $request): JsonResponse
+    public function confirmEmailAction(string $token): JsonResponse
     {
-        $this->registerService->setStrategy($this->emailRegister);
+        $request = new EmailConfirmRequest($token);
+        $response = $this->emailRegister->confirm($request);
 
-        $confirmResponse = $this->registerService->confirm($request);
-
-        return $this->json($confirmResponse, $confirmResponse->getCode());
+        return $this->json($response, $response->getCode());
     }
 
     /**
      * @Route("/recoverPassword", name="recoverPassword", methods={"POST"})
-     * @param RegisterByEmailRequest $recoverPasswordRequest
+     * @param EmailInfoRequest $request
      * @return JsonResponse
      */
-    public function recoverPasswordAction(RegisterByEmailRequest $recoverPasswordRequest): JsonResponse
+    public function recoverPasswordAction(EmailInfoRequest $request): JsonResponse
     {
-        $this->registerService->setStrategy($this->emailRegister);
+        $response = $this->emailRegister->recoverPassword($request);
 
-        $recoverPasswordResponse = $this->registerService->recoverPassword($recoverPasswordRequest);
+        return $this->json($response, $response->getCode());
+    }
 
-        return $this->json($recoverPasswordResponse, $recoverPasswordResponse->getCode());
+    /**
+     * @Route("/confirmPassword", name="confirmPassword", methods={"POST"})
+     * @param EmailInfoRequest $request
+     * @return JsonResponse
+     */
+    public function confirmPasswordAction( $request): JsonResponse
+    {
+        $response = $this->emailRegister->confirmPassword($request);
+
+        return $this->json($response, $response->getCode());
     }
 }

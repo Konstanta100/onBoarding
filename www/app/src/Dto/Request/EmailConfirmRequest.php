@@ -4,68 +4,21 @@ declare(strict_types=1);
 
 namespace App\Dto\Request;
 
-use JMS\Serializer\Annotation as Serializer;
-use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @Serializer\ExclusionPolicy("all")
- */
-class EmailConfirmRequest implements ConfirmContactRequest
+class EmailConfirmRequest implements ContactConfirmRequest
 {
-    /**
-     * @Assert\NotBlank(
-     *     message = "The userId is not specified"
-     * )
-     * @Serializer\Expose()
-     * @Serializer\Type("string")
-     *
-     * @var string|null
-     */
-    private ?string $id = null;
+    private string $token;
 
-    /**
-     * @Assert\NotBlank(
-     *     message = "The password is not specified"
-     * )
-     * @Serializer\Expose()
-     * @Serializer\Type("string")
-     *
-     * @var string|null
-     */
-    private ?string $token = null;
-
-    /**
-     * @Assert\NotBlank(
-     *     message = "The password is not specified"
-     * )
-     * @Serializer\Expose()
-     * @Serializer\Type("string")
-     *
-     * @var string|null
-     */
-    private ?string $password = null;
-
-    /**
-     * @return string|null
-     */
-    public function getUserId(): ?string
+    public function __construct(string $token)
     {
-        return $this->id;
+        $this->token = $token;
     }
 
     /**
      * @return string
      */
-    public function getToken(): ?string
+    public function getToken(): string
     {
         return $this->token;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword(): ?string
-    {
-        return $this->password;
     }
 }
